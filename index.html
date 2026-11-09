@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>家的味道｜線上點餐</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Noto Sans TC", sans-serif;
+  background: #fff8ef;
+  color: #49352a;
+}
+
+header {
+  background: #873f2b;
+  color: white;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+header p {
+  margin-bottom: 0;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  background: white;
+  flex-wrap: wrap;
+}
+
+nav button {
+  border: 0;
+  background: #f1e3d5;
+  color: #6b3928;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+nav button.active {
+  background: #873f2b;
+  color: white;
+}
+
+main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 12px #0000000a;
+}
+
+h2 {
+  color: #873f2b;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 7px 0 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button.primary {
+  background: #873f2b;
+  color: white;
+  border: 0;
+  padding: 13px 20px;
+  border-radius: 9px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #eee;
+  padding: 12px 0;
+}
+
+.menu-item button {
+  background: #e8b16b;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 13px;
+  cursor: pointer;
+}
+
+.order {
+  border-left: 5px solid #c17b45;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #987b68;
+}
+
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 23px;
+  }
+
+  main {
+    padding: 12px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🍜 家的味道</h1>
+  <p>用心料理・家的好味道</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('order',this)">
+    客人點餐
+  </button>
+
+  <button onclick="showSection('manage',this)">
+    店內訂單
+  </button>
+
+  <button onclick="showSection('menu',this)">
+    菜單管理
+  </button>
+</nav>
+
+<main>
+
+<section id="order" class="section active">
+  <div class="card">
+    <h2>今日菜單</h2>
+    <p>歡迎光臨！請選擇您喜愛的餐點。</p>
+    <div id="menuList"></div>
+  </div>
+
+  <div class="card">
+    <h2>🛒 我的訂單</h2>
+    <div id="cartList">尚未選擇餐點</div>
+    <h3 id="total">總金額：$0</h3>
+  </div>
+
+  <div class="card">
+    <h2>📋 訂單資料</h2>
+
+    <label>訂購人姓名</label>
+    <input id="customer" placeholder="請輸入姓名">
+
+    <label>聯絡電話</label>
+    <input id="phone" placeholder="請輸入電話">
+
+    <label>用餐方式</label>
+    <select id="method" onchange="toggleAddress()">
+      <option value="外帶">外帶</option>
+      <option value="內用">內用</option>
+      <option value="外送">外送</option>
+    </select>
+
+    <div id="addressBox" style="display:none">
+      <label>外送地址（必填）</label>
+      <input id="address" placeholder="請輸入完整外送地址">
+    </div>
+
+    <label>桌號（內用填寫）</label>
+    <input id="table" placeholder="例如：3號桌">
+
+    <label>訂單備註</label>
+    <textarea id="notes" rows="3"
+      placeholder="例如：不要辣、少油、餐具需求"></textarea>
+
+    <button class="primary" onclick="submitOrder()">
+      送出訂單
+    </button>
+  </div>
+</section>
+
+<section id="manage" class="section">
+  <div class="card">
+    <h2>🧾 店內訂單管理</h2>
+    <p>這裡將顯示客人送出的訂單。</p>
+    <div id="ordersList"></div>
+  </div>
+</section>
+
+<section id="menu" class="section">
+  <div class="card">
+    <h2>🍱 菜單管理</h2>
+
+    <label>餐點名稱</label>
+    <input id="newName" placeholder="例如：肉燥飯">
+
+    <label>餐點價格</label>
+    <input id="newPrice" type="number" placeholder="例如：50">
+
+    <label>餐點分類</label>
+    <select id="newCategory">
+      <option>飯類</option>
+      <option>麵類</option>
+      <option>湯類</option>
+      <option>水餃</option>
+      <option>小菜</option>
+      <option>滷味</option>
+    </select>
+
+    <button class="primary" onclick="addMenu()">
+      新增餐點
+    </button>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  家的味道餐館 © 2026
+</footer>
+
+<script>
+let menu = [
+  {name:"肉燥飯",price:40,category:"飯類"},
+  {name:"乾麵",price:45,category:"麵類"},
+  {name:"肉羹湯",price:50,category:"湯類"},
+  {name:"水餃",price:60,category:"水餃"},
+  {name:"炒飯",price:80,category:"飯類"}
+];
+
+let cart = [];
+let orders = [];
+
+function showSection(id,btn) {
+  document.querySelectorAll(".section")
+    .forEach(s=>s.classList.remove("active"));
+
+  document.querySelectorAll("nav button")
+    .forEach(b=>b.classList.remove("active"));
+
+  document.getElementById(id).classList.add("active");
+  btn.classList.add("active");
+}
+
+function renderMenu() {
+  const list=document.getElementById("menuList");
+  list.innerHTML="";
+
+  menu.forEach((item,index)=>{
+    list.innerHTML+=`
+      <div class="menu-item">
+        <div>
+          <strong>${item.name}</strong>
+          <div>$${item.price}</div>
+        </div>
+        <button onclick="addCart(${index})">加入</button>
+      </div>
+    `;
+  });
+}
+
+function addCart(index) {
+  cart.push(menu[index]);
+  renderCart();
+}
+
+function renderCart() {
+  const list=document.getElementById("cartList");
+  const total=cart.reduce((sum,item)=>sum+item.price,0);
+
+  list.innerHTML=cart.length
+    ?cart.map(item=>`${item.name} $${item.price}`).join("<br>")
+    :"尚未選擇餐點";
+
+  document.getElementById("total").textContent=
+    "總金額：$"+total;
+}
+
+function toggleAddress() {
+  const method=document.getElementById("method").value;
+
+  document.getElementById("addressBox").style.display=
+    method==="外送"?"block":"none";
+}
+
+function submitOrder() {
+  const customer=document.getElementById("customer").value.trim();
+  const phone=document.getElementById("phone").value.trim();
+  const method=document.getElementById("method").value;
+  const address=document.getElementById("address").value.trim();
+
+  if(!customer||!phone||cart.length===0) {
+    alert("請填寫姓名、電話並選擇餐點！");
+    return;
+  }
+
+  if(method==="外送"&&!address) {
+    alert("外送訂單必須填寫地址！");
+    return;
+  }
+
+  const order={
+    number:Date.now(),
+    customer,
+    phone,
+    method,
+    address,
+    table:document.getElementById("table").value,
+    notes:document.getElementById("notes").value,
+    items:[...cart],
+    total:cart.reduce((sum,item)=>sum+item.price,0),
+    status:"新訂單"
+  };
+
+  orders.push(order);
+  renderOrders();
+
+  alert("訂單已建立！");
+
+  cart=[];
+  renderCart();
+}
+
+function renderOrders() {
+  const list=document.getElementById("ordersList");
+
+  list.innerHTML=orders.map((o,index)=>`
+    <div class="card order">
+      <h3>訂單 ${index+1}｜${o.customer}</h3>
+      <p>電話：${o.phone}</p>
+      <p>方式：${o.method}</p>
+      <p>地址：${o.address||"—"}</p>
+      <p>桌號：${o.table||"—"}</p>
+      <p>餐點：${o.items.map(i=>i.name).join("、")}</p>
+      <p>備註：${o.notes||"—"}</p>
+      <h3>總金額：$${o.total}</h3>
+      <select onchange="orders[${index}].status=this.value">
+        <option>新訂單</option>
+        <option>製作中</option>
+        <option>待取餐</option>
+        <option>已完成</option>
+        <option>已取消</option>
+      </select>
+    </div>
+  `).join("");
+}
+
+function addMenu() {
+  const name=document.getElementById("newName").value.trim();
+  const price=Number(document.getElementById("newPrice").value);
+  const category=document.getElementById("newCategory").value;
+
+  if(!name||price<=0) {
+    alert("請輸入正確餐點名稱與價格！");
+    return;
+  }
+
+  menu.push({name,price,category});
+  renderMenu();
+
+  document.getElementById("newName").value="";
+  document.getElementById("newPrice").value="";
+
+  alert("餐點已新增！");
+}
+
+renderMenu();
+</script>
+
+</body>
+</html>
