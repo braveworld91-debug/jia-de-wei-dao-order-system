@@ -2,177 +2,332 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>家的味道｜線上點餐</title>
 <style>
-:root{--brown:#873f2b;--brown2:#60301f;--cream:#fff8ef;--gold:#e8b16b;--pale:#f5e5d1;--ink:#49352a;--green:#49734c}
+:root{--brown:#873f2b;--cream:#fff8ef;--gold:#e8b16b;--ink:#49352a;}
 *{box-sizing:border-box}
-body{margin:0;background:var(--cream);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
-header{background:linear-gradient(135deg,#743622,#9b5033);color:#fff;padding:22px 16px;text-align:center}
-.brand{font-size:clamp(25px,4vw,36px);font-weight:800;letter-spacing:2px}
-header p{margin:8px 0 0}
-.topnote{background:#fff1db;text-align:center;padding:10px;font-size:14px}
-nav{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;background:#fff;padding:13px;position:sticky;top:0;z-index:5;box-shadow:0 2px 10px #0000000b}
-nav button,.catbtn{border:0;border-radius:12px;padding:11px 17px;background:var(--pale);color:var(--brown);font-weight:700;cursor:pointer}
-nav button.active,.catbtn.active{background:var(--brown);color:#fff}
-main{max-width:1180px;margin:22px auto;padding:0 14px}
-.view{display:none}.view.active{display:block}
-.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.8fr);gap:18px;align-items:start}
-.panel{background:#fff;border:1px solid #f0dfcd;border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 4px 16px #6b39280a}
-h2{color:var(--brown);margin:0 0 14px;font-size:23px}
-h3{margin:0 0 10px;color:var(--brown)}
-.categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:9px;margin-bottom:16px}
-.catbtn{padding:13px 9px}
-.menuitem{display:grid;grid-template-columns:1fr auto;gap:10px;padding:14px 0;border-bottom:1px solid #f0e9e2;align-items:center}
-.menuitem:last-child{border-bottom:0}
-.itemname{font-weight:750;font-size:17px}
-.price{color:#78503a;margin-top:3px}
-.variant{margin-top:8px;max-width:270px;padding:8px;border:1px solid #e6d6c6;border-radius:8px;background:#fffaf4}
-.addbtn,.primary{background:var(--gold);color:#3d291c;border:0;border-radius:10px;padding:10px 15px;font-weight:750;cursor:pointer}
-.primary{background:var(--brown);color:#fff}
-.smallbtn{border:0;border-radius:8px;padding:6px 10px;cursor:pointer;background:#f3e4d5;color:var(--brown);font-weight:700}
-.cartline{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 0;border-bottom:1px solid #eee}
-.qty{display:flex;align-items:center;gap:8px}
-.total{font-size:22px;font-weight:800;color:var(--brown);padding:14px 0}
-label{display:block;font-weight:700;margin:12px 0 5px}
-input,select,textarea{width:100%;padding:11px;border:1px solid #ddcbbb;border-radius:9px;font:inherit;background:#fff}
-textarea{resize:vertical}
-.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.hint{font-size:13px;color:#856d5b;margin:6px 0}
-.hide{display:none!important}
-.ordercard{border-left:5px solid var(--gold);background:#fffaf5;padding:15px;border-radius:12px;margin:12px 0}
-.ordercard p{margin:6px 0;overflow-wrap:anywhere}
-.badge{display:inline-block;background:#f2e3d3;color:#6b3928;border-radius:30px;padding:4px 9px;font-size:13px}
-.adminrow{display:grid;grid-template-columns:1fr 110px 130px auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #eee}
-footer{text-align:center;color:#987b68;padding:25px}
-@media(max-width:780px){.layout{grid-template-columns:1fr}.cartpanel{position:static}.formgrid{grid-template-columns:1fr}.adminrow{grid-template-columns:1fr 90px}}
+body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--cream);color:var(--ink)}
+header{background:var(--brown);color:white;padding:24px 16px;text-align:center}
+header h1{margin:0;font-size:clamp(24px,4vw,34px)} header p{margin:8px 0 0}
+nav{display:flex;justify-content:center;gap:10px;padding:14px;background:white;flex-wrap:wrap;position:sticky;top:0;z-index:3}
+nav button,.primary{border:0;border-radius:10px;padding:12px 18px;font-size:16px;cursor:pointer;background:#f1e3d5;color:var(--brown)}
+nav button.active,.primary{background:var(--brown);color:white}
+main{max-width:1050px;margin:auto;padding:18px}
+.section{display:none}.section.active{display:block}
+.card{background:white;border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 3px 12px #0000000a}
+h2{color:var(--brown);margin-top:0}
+.categories{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 20px}
+.cat{border:1px solid #e6d4c4;background:#fffaf5;color:var(--brown);padding:9px 13px;border-radius:20px;cursor:pointer}
+.cat.active{background:var(--brown);color:white}
+.menu-item{display:flex;justify-content:space-between;align-items:center;gap:14px;border-bottom:1px solid #eee;padding:13px 0}
+.menu-item:last-child{border-bottom:0}
+.item-info strong{font-size:17px}.price{margin-top:4px}
+.item-options{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.item-options select{width:auto;margin:0;padding:7px;border:1px solid #ddd;border-radius:7px}
+.menu-item button{background:var(--gold);border:0;border-radius:9px;padding:10px 14px;cursor:pointer;white-space:nowrap}
+input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ddd;border-radius:8px;font-size:16px}
+.cart-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eee}
+.cart-row button{border:0;background:#f8e8df;color:#8a3524;border-radius:6px;padding:4px 9px}
+.order{border-left:5px solid #c17b45}
+footer{text-align:center;padding:24px;color:#987b68}
+@media(max-width:600px){main{padding:10px}.card{padding:15px}.menu-item{align-items:flex-start}}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">🍜 家的味道</div>
-  <p>用心料理・家的好味道</p>
-</header>
-<div class="topnote">餐點現點現做｜請確認餐點、用餐方式與桌號後送出訂單</div>
+<header><h1>🍜 家的味道</h1><p>用心料理・家的好味道</p></header>
 <nav>
-  <button class="active" data-view="customer">🍽️ 客人點餐</button>
-  <button data-view="orders">🧾 店內訂單</button>
-  <button data-view="admin">🛠️ 菜單管理</button>
+<button class="active" onclick="showSection('order',this)">客人點餐</button>
+<button onclick="showSection('manage',this)">店內訂單</button>
+<button onclick="showSection('menu',this)">菜單管理</button>
 </nav>
 <main>
-<section id="customer" class="view active">
-  <div class="panel">
-    <h2>家的味道｜餐廳菜單</h2>
-    <p>歡迎光臨！選擇分類與餐點，加入點餐小計。</p>
-    <div id="categories" class="categories"></div>
-  </div>
-  <div class="layout">
-    <div class="panel"><h2 id="categoryTitle">🍜 麵類</h2><div id="menuList"></div></div>
-    <aside>
-      <div class="panel cartpanel">
-        <h2>🛒 點餐小計</h2><div id="cartList">還沒有選擇餐點喔。</div>
-        <div id="total" class="total">總計：$0</div>
-        <button class="smallbtn" onclick="clearCart()">清空餐點</button>
-      </div>
-      <div class="panel">
-        <h2>📋 訂單資料</h2>
-        <label for="method">用餐方式</label>
-        <select id="method"><option value="內用">內用</option><option value="外帶">外帶</option><option value="外送">外送</option></select>
-        <div id="tableBox"><label for="table">桌號（內用必填）</label><input id="table" placeholder="例如：3號桌"></div>
-        <div id="contactBox" class="hide">
-          <label for="customerName">訂購人姓名 <span class="hint">(外帶選填，外送必填)</span></label><input id="customerName" placeholder="請輸入姓名">
-          <label for="phone">聯絡電話 <span class="hint">(外帶選填，外送必填)</span></label><input id="phone" inputmode="tel" placeholder="請輸入電話">
-        </div>
-        <div id="addressBox" class="hide"><label for="address">外送地址（必填）</label><textarea id="address" rows="2" placeholder="請輸入完整地址"></textarea></div>
-        <label for="notes">訂單備註</label><textarea id="notes" rows="2" placeholder="例如：不要辣、少油、餐具需求"></textarea>
-        <p class="hint">內用只需填桌號；外帶不需提供姓名電話；外送需填姓名、電話與地址。</p>
-        <button class="primary" style="width:100%" onclick="submitOrder()">送出訂單</button>
-      </div>
-    </aside>
-  </div>
-</section>
-<section id="orders" class="view">
-  <div class="panel"><h2>🧾 店內訂單管理</h2><p class="hint">訂單保存在目前這台裝置的瀏覽器。跨裝置同步或接收客人遠端訂單，需要另外連接資料庫／後端服務。</p><button class="smallbtn" onclick="renderOrders()">重新整理</button><div id="ordersList"></div></div>
-</section>
-<section id="admin" class="view">
-  <div class="panel"><h2>🛠️ 菜單管理｜新增餐點</h2>
-    <div class="formgrid">
-      <div><label for="newName">餐點名稱</label><input id="newName" placeholder="輸入餐點名稱"></div>
-      <div><label for="newPrice">價格（元）</label><input id="newPrice" type="number" min="1" placeholder="輸入價格"></div>
-      <div><label for="newCategory">分類</label><select id="newCategory"></select></div>
-      <div><label for="newVariant">規格選項（可留白）</label><input id="newVariant" placeholder="例如：細麵、寬麵、鹽水意麵"></div>
-    </div>
-    <button class="primary" onclick="addMenuItem()">新增餐點</button>
-  </div>
-  <div class="panel"><h2>目前菜單</h2><div id="adminMenu"></div></div>
-</section>
-</main>
-<footer>家的味道餐館 © 2026｜用心料理・家的好味道</footer>
+<section id="order" class="section active">
+<div class="card">
+<h2>今日菜單</h2><p>歡迎光臨！請選擇您喜愛的餐點。</p>
+<div id="categories" class="categories"></div><div id="menuList"></div>
+</div>
+<div class="card"><h2>🛒 我的訂單</h2><div id="cartList">尚未選擇餐點</div><h3 id="total">總金額：$0</h3><button class="primary" onclick="clearCart()">清空購物車</button></div>
+<div class="card"><h2>📋 訂單資料</h2>
+<label>訂購人姓名</label><input id="customer" placeholder="請輸入姓名">
+<label>聯絡電話</label><input id="phone" placeholder="請輸入電話">
+<label>用餐方式</label><select id="method" onchange="toggleAddress()"><option value="外帶">外帶</option><option value="內用">內用</option><option value="外送">外送</option></select>
+<div id="addressBox" style="display:none"><label>外送地址（必填）</label><input id="address" placeholder="請輸入完整外送地址"></div>
+<label>桌號（內用填寫）</label><input id="table" placeholder="例如：3號桌">
+<label>訂單備註</label><textarea id="notes" rows="3" placeholder="例如：不要辣、少油、餐具需求"></textarea>
+<button class="primary" onclick="submitOrder()">送出訂單</button>
+</div></section>
+<section id="manage" class="section"><div class="card"><h2>🧾 店內訂單管理</h2><p>此版本訂單僅暫存在目前瀏覽器，尚未同步至其他裝置。</p><div id="ordersList"></div></div></section>
+<section id="menu" class="section"><div class="card"><h2>🍱 菜單管理</h2>
+<label>餐點名稱</label><input id="newName" placeholder="例如：今日特餐">
+<label>餐點價格</label><input id="newPrice" type="number" placeholder="例如：50">
+<label>餐點分類</label><select id="newCategory"><option>麵類</option><option>飯類</option><option>羹類</option><option>炒類</option><option>便當類</option><option>湯類</option><option>小菜類</option></select>
+<button class="primary" onclick="addMenu()">新增餐點</button>
+</div></section>
+</main><footer>家的味道餐館 © 2026</footer>
 <script>
-const categories=["麵類","飯類","羹類","炒類","便當類","湯類","小菜類"];
-const initialMenu=[
-{name:"乾麵",price:55,category:"麵類",options:["細麵","寬麵","鹽水意麵"]},
-{name:"湯麵",price:55,category:"麵類",options:["細麵","寬麵","鹽水意麵"]},
-{name:"麻醬麵",price:55,category:"麵類",options:["細麵","寬麵","鹽水意麵"]},
-{name:"肉燥飯",price:40,category:"飯類"},
-{name:"魚皮飯湯",price:70,category:"飯類"},
-{name:"魚肚飯湯",price:75,category:"飯類"},
-{name:"海鮮飯湯",price:85,category:"飯類"},
-{name:"肉羹",price:55,category:"羹類"},
-{name:"飯羹",price:55,category:"羹類"},
-{name:"油麵羹",price:55,category:"羹類"},
-{name:"意麵羹",price:55,category:"羹類"},
-{name:"肉絲炒飯",price:75,category:"炒類"},
-{name:"肉絲炒麵",price:75,category:"炒類"},
-{name:"每日菜飯（四種配菜）",price:70,category:"便當類"},
-{name:"鯖魚飯",price:95,category:"便當類"},
-{name:"炸排骨飯",price:95,category:"便當類"},
-{name:"控肉便當",price:95,category:"便當類"},
-{name:"每日特餐",price:95,category:"便當類"},
-{name:"炸雞腿飯",price:95,category:"便當類"},
-{name:"香雞排飯",price:95,category:"便當類"},
-{name:"蛋花湯",price:30,category:"湯類"},
-{name:"貢丸湯",price:35,category:"湯類"},
-{name:"魚丸湯",price:35,category:"湯類"},
-{name:"魚皮湯",price:40,category:"湯類"},
-{name:"蛤蜊湯",price:40,category:"湯類"},
-{name:"肝連湯",price:40,category:"湯類"},
-{name:"嘴邊肉湯",price:40,category:"湯類"},
-{name:"魚肚湯",price:65,category:"湯類"},
-{name:"水餃（10顆）",price:50,category:"小菜類"},
-{name:"滷蛋",price:10,category:"小菜類"},
-{name:"貢丸",price:10,category:"小菜類"},
-{name:"油豆腐",price:10,category:"小菜類"},
-{name:"米血",price:10,category:"小菜類"},
-{name:"豆干（2塊）",price:15,category:"小菜類"},
-{name:"荷包蛋",price:20,category:"小菜類"},
-{name:"蔥花蛋",price:35,category:"小菜類"},
-{name:"燙青菜",price:30,category:"小菜類"},
-{name:"肝連肉",price:40,category:"小菜類"},
-{name:"嘴邊肉",price:40,category:"小菜類"}
+const categories=["全部","麵類","飯類","羹類","炒類","便當類","湯類","小菜類"];
+let menu=[
+  {
+    "name": "乾麵",
+    "price": 55,
+    "category": "麵類",
+    "options": [
+      "細麵",
+      "寬麵",
+      "鹽水意麵"
+    ]
+  },
+  {
+    "name": "湯麵",
+    "price": 55,
+    "category": "麵類",
+    "options": [
+      "細麵",
+      "寬麵",
+      "鹽水意麵"
+    ]
+  },
+  {
+    "name": "麻醬麵",
+    "price": 55,
+    "category": "麵類",
+    "options": [
+      "細麵",
+      "寬麵",
+      "鹽水意麵"
+    ]
+  },
+  {
+    "name": "肉燥飯",
+    "price": 40,
+    "category": "飯類",
+    "options": []
+  },
+  {
+    "name": "魚皮飯湯",
+    "price": 70,
+    "category": "飯類",
+    "options": []
+  },
+  {
+    "name": "魚肚飯湯",
+    "price": 75,
+    "category": "飯類",
+    "options": []
+  },
+  {
+    "name": "海鮮飯湯",
+    "price": 85,
+    "category": "飯類",
+    "options": []
+  },
+  {
+    "name": "肉羹",
+    "price": 55,
+    "category": "羹類",
+    "options": []
+  },
+  {
+    "name": "飯羹",
+    "price": 55,
+    "category": "羹類",
+    "options": []
+  },
+  {
+    "name": "油麵羹",
+    "price": 55,
+    "category": "羹類",
+    "options": []
+  },
+  {
+    "name": "意麵羹",
+    "price": 55,
+    "category": "羹類",
+    "options": []
+  },
+  {
+    "name": "肉絲炒飯",
+    "price": 75,
+    "category": "炒類",
+    "options": []
+  },
+  {
+    "name": "肉絲炒麵",
+    "price": 75,
+    "category": "炒類",
+    "options": []
+  },
+  {
+    "name": "每日菜飯（四種配菜）",
+    "price": 70,
+    "category": "便當類",
+    "options": []
+  },
+  {
+    "name": "鯖魚飯",
+    "price": 95,
+    "category": "便當類",
+    "options": []
+  },
+  {
+    "name": "炸排骨飯",
+    "price": 95,
+    "category": "便當類",
+    "options": []
+  },
+  {
+    "name": "控肉便當",
+    "price": 95,
+    "category": "便當類",
+    "options": []
+  },
+  {
+    "name": "每日特餐",
+    "price": 95,
+    "category": "便當類",
+    "options": []
+  },
+  {
+    "name": "炸雞腿飯",
+    "price": 95,
+    "category": "便當類",
+    "options": []
+  },
+  {
+    "name": "香雞排飯",
+    "price": 95,
+    "category": "便當類",
+    "options": []
+  },
+  {
+    "name": "蛋花湯",
+    "price": 30,
+    "category": "湯類",
+    "options": []
+  },
+  {
+    "name": "貢丸湯",
+    "price": 35,
+    "category": "湯類",
+    "options": []
+  },
+  {
+    "name": "魚丸湯",
+    "price": 35,
+    "category": "湯類",
+    "options": []
+  },
+  {
+    "name": "魚皮湯",
+    "price": 40,
+    "category": "湯類",
+    "options": []
+  },
+  {
+    "name": "蛤蜊湯",
+    "price": 40,
+    "category": "湯類",
+    "options": []
+  },
+  {
+    "name": "肝連湯",
+    "price": 40,
+    "category": "湯類",
+    "options": []
+  },
+  {
+    "name": "嘴邊肉湯",
+    "price": 40,
+    "category": "湯類",
+    "options": []
+  },
+  {
+    "name": "魚肚湯",
+    "price": 65,
+    "category": "湯類",
+    "options": []
+  },
+  {
+    "name": "水餃（10顆）",
+    "price": 50,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "滷蛋",
+    "price": 10,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "貢丸",
+    "price": 10,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "油豆腐",
+    "price": 10,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "米血",
+    "price": 10,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "豆干（2塊）",
+    "price": 15,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "荷包蛋",
+    "price": 20,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "蔥花蛋",
+    "price": 35,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "燙青菜",
+    "price": 30,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "肝連肉",
+    "price": 40,
+    "category": "小菜類",
+    "options": []
+  },
+  {
+    "name": "嘴邊肉",
+    "price": 40,
+    "category": "小菜類",
+    "options": []
+  }
 ];
-let menu=load("jia_menu",initialMenu),cart=[],orders=load("jia_orders",[]),activeCategory="麵類";
-function load(key,fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):JSON.parse(JSON.stringify(fallback))}catch(e){return JSON.parse(JSON.stringify(fallback))}}
-function save(){try{localStorage.setItem("jia_menu",JSON.stringify(menu));localStorage.setItem("jia_orders",JSON.stringify(orders))}catch(e){}}
-document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===b.dataset.view));if(b.dataset.view==="orders")renderOrders();if(b.dataset.view==="admin")renderAdmin()}));
-function renderCategories(){document.getElementById("categories").innerHTML=categories.map(c=>`<button class="catbtn ${c===activeCategory?"active":""}" onclick="chooseCategory('${c}')">${c}</button>`).join("");document.getElementById("newCategory").innerHTML=categories.map(c=>`<option>${c}</option>`).join("")}
-function chooseCategory(c){activeCategory=c;renderCategories();renderMenu()}
-function renderMenu(){document.getElementById("categoryTitle").textContent=activeCategory;const items=menu.map((m,i)=>({...m,index:i})).filter(m=>m.category===activeCategory);document.getElementById("menuList").innerHTML=items.length?items.map(m=>`<div class="menuitem"><div><div class="itemname">${esc(m.name)}</div><div class="price">$${m.price}</div>${m.options?.length?`<select class="variant" id="opt-${m.index}">${m.options.map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:""}</div><button class="addbtn" onclick="addToCart(${m.index})">加入</button></div>`).join(""):"此分類目前沒有餐點。"}
-function addToCart(i){const m=menu[i],opt=m.options?.length?document.getElementById("opt-"+i).value:"";const key=i+"|"+opt;const found=cart.find(x=>x.key===key);if(found)found.qty++;else cart.push({key,index:i,name:m.name+(opt?"（"+opt+"）":""),price:Number(m.price),qty:1});renderCart()}
-function adjust(key,delta){const item=cart.find(x=>x.key===key);if(!item)return;item.qty+=delta;if(item.qty<=0)cart=cart.filter(x=>x.key!==key);renderCart()}
-function clearCart(){cart=[];renderCart()}
-function renderCart(){const el=document.getElementById("cartList");el.innerHTML=cart.length?cart.map(x=>`<div class="cartline"><div>${esc(x.name)}<br><span class="hint">$${x.price} × ${x.qty}</span></div><div class="qty"><button class="smallbtn" onclick="adjust('${x.key.replace(/'/g,"&#39;")}',-1)">−</button><b>${x.qty}</b><button class="smallbtn" onclick="adjust('${x.key.replace(/'/g,"&#39;")}',1)">＋</button></div></div>`).join(""):"還沒有選擇餐點喔。";document.getElementById("total").textContent="總計：$"+cart.reduce((s,x)=>s+x.price*x.qty,0)}
-const methodEl=document.getElementById("method");methodEl.addEventListener("change",updateFields);
-function updateFields(){const m=methodEl.value;document.getElementById("tableBox").classList.toggle("hide",m!=="內用");document.getElementById("contactBox").classList.toggle("hide",m==="內用");document.getElementById("addressBox").classList.toggle("hide",m!=="外送")}
-function submitOrder(){if(!cart.length){alert("請先選擇餐點喔！");return}const method=methodEl.value,table=document.getElementById("table").value.trim(),name=document.getElementById("customerName").value.trim(),phone=document.getElementById("phone").value.trim(),address=document.getElementById("address").value.trim();if(method==="內用"&&!table){alert("內用請填寫桌號。");return}if(method==="外送"&&(!name||!phone||!address)){alert("外送請填寫姓名、電話與完整地址。");return}const order={id:Date.now(),time:new Date().toLocaleString("zh-TW"),method,table,name,phone,address,notes:document.getElementById("notes").value.trim(),items:cart.map(x=>({...x})),total:cart.reduce((s,x)=>s+x.price*x.qty,0),status:"新訂單"};orders.unshift(order);save();cart=[];renderCart();document.getElementById("table").value="";document.getElementById("customerName").value="";document.getElementById("phone").value="";document.getElementById("address").value="";document.getElementById("notes").value="";alert("訂單已建立！請店內確認訂單內容。")}
-function renderOrders(){const el=document.getElementById("ordersList");if(!orders.length){el.innerHTML="<p>目前還沒有訂單。</p>";return}el.innerHTML=orders.map((o,i)=>`<div class="ordercard"><div><b>訂單 ${i+1}</b> <span class="badge">${esc(o.status)}</span></div><p class="hint">${esc(o.time||"")}</p><p><b>用餐方式：</b>${esc(o.method)} ${o.table?"｜桌號："+esc(o.table):""}</p>${o.name?`<p><b>姓名：</b>${esc(o.name)}</p>`:""}${o.phone?`<p><b>電話：</b>${esc(o.phone)}</p>`:""}${o.address?`<p><b>地址：</b>${esc(o.address)}</p>`:""}<p><b>餐點：</b>${o.items.map(x=>esc(x.name)+" × "+x.qty).join("、")}</p><p><b>備註：</b>${esc(o.notes||"—")}</p><h3>總金額：$${o.total}</h3><label>訂單狀態</label><select onchange="setStatus(${o.id},this.value)">${["新訂單","製作中","待取餐","已完成","已取消"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}</select><button class="smallbtn" style="margin-top:8px" onclick="deleteOrder(${o.id})">刪除此訂單</button></div>`).join("")}
-function setStatus(id,status){const o=orders.find(x=>x.id===id);if(o){o.status=status;save();renderOrders()}}
-function deleteOrder(id){if(confirm("確定刪除此訂單？")){orders=orders.filter(x=>x.id!==id);save();renderOrders()}}
-function addMenuItem(){const name=document.getElementById("newName").value.trim(),price=Number(document.getElementById("newPrice").value),category=document.getElementById("newCategory").value,raw=document.getElementById("newVariant").value.trim();if(!name||!Number.isFinite(price)||price<=0){alert("請填寫餐點名稱與正確價格。");return}menu.push({name,price,category,options:raw?raw.split(/[、,，]/).map(x=>x.trim()).filter(Boolean):[]});save();document.getElementById("newName").value="";document.getElementById("newPrice").value="";document.getElementById("newVariant").value="";renderMenu();renderAdmin();alert("已新增餐點。")}
-function removeMenu(i){if(confirm("確定從菜單移除此餐點？")){menu.splice(i,1);save();renderMenu();renderAdmin()}}
-function renderAdmin(){document.getElementById("adminMenu").innerHTML=menu.map((m,i)=>`<div class="adminrow"><div><b>${esc(m.name)}</b><div class="hint">${esc(m.category)}${m.options?.length?"｜"+m.options.map(esc).join("、"):""}</div></div><div>$${m.price}</div><div></div><button class="smallbtn" onclick="removeMenu(${i})">移除</button></div>`).join("")}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-renderCategories();renderMenu();renderCart();updateFields();
+let selectedCategory="全部",cart=[],orders=[];
+function showSection(id,btn){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));document.getElementById(id).classList.add("active");btn.classList.add("active");}
+function renderCategories(){document.getElementById("categories").innerHTML=categories.map(c=>`<button class="cat ${c===selectedCategory?'active':''}" onclick="chooseCategory(${JSON.stringify(c)})">${c}</button>`).join("");}
+function chooseCategory(c){selectedCategory=c;renderCategories();renderMenu();}
+function renderMenu(){const list=document.getElementById("menuList");const filtered=menu.map((item,index)=>({item,index})).filter(x=>selectedCategory==="全部"||x.item.category===selectedCategory);
+list.innerHTML=filtered.map(({item,index})=>`<div class="menu-item"><div class="item-info"><strong>${item.name}</strong><div class="price">$${item.price}</div>${item.options&&item.options.length?`<div class="item-options"><select id="option-${index}">${item.options.map(o=>`<option>${o}</option>`).join("")}</select></div>`:""}</div><button onclick="addCart(${index})">加入</button></div>`).join("")||"<p>此分類目前沒有餐點。</p>";}
+function addCart(index){const item=menu[index];const option=item.options&&item.options.length?document.getElementById("option-"+index).value:"";cart.push({name:item.name+(option?"（"+option+"）":""),price:item.price});renderCart();}
+function renderCart(){const list=document.getElementById("cartList");const total=cart.reduce((s,i)=>s+i.price,0);list.innerHTML=cart.length?cart.map((i,index)=>`<div class="cart-row"><span>${i.name} $${i.price}</span><button onclick="removeCart(${index})">移除</button></div>`).join(""):"尚未選擇餐點";document.getElementById("total").textContent="總金額：$"+total;}
+function removeCart(i){cart.splice(i,1);renderCart();}function clearCart(){cart=[];renderCart();}
+function toggleAddress(){document.getElementById("addressBox").style.display=document.getElementById("method").value==="外送"?"block":"none";}
+function submitOrder(){const customer=document.getElementById("customer").value.trim(),phone=document.getElementById("phone").value.trim(),method=document.getElementById("method").value,address=document.getElementById("address").value.trim();if(!customer||!phone||!cart.length){alert("請填寫姓名、電話並選擇餐點！");return;}if(method==="外送"&&!address){alert("外送訂單必須填寫地址！");return;}const order={customer,phone,method,address,table:document.getElementById("table").value,notes:document.getElementById("notes").value,items:[...cart],total:cart.reduce((s,i)=>s+i.price,0),status:"新訂單"};orders.push(order);renderOrders();alert("訂單已建立！目前僅保存在此瀏覽器。");cart=[];renderCart();}
+function renderOrders(){document.getElementById("ordersList").innerHTML=orders.map((o,i)=>`<div class="card order"><h3>訂單 ${i+1}｜${o.customer}</h3><p>電話：${o.phone}</p><p>方式：${o.method}</p><p>地址：${o.address||"—"}</p><p>桌號：${o.table||"—"}</p><p>餐點：${o.items.map(x=>x.name).join("、")}</p><p>備註：${o.notes||"—"}</p><h3>總金額：$${o.total}</h3><select onchange="orders[${i}].status=this.value">${["新訂單","製作中","待取餐","已完成","已取消"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}</select></div>`).join("");}
+function addMenu(){const name=document.getElementById("newName").value.trim(),price=Number(document.getElementById("newPrice").value),category=document.getElementById("newCategory").value;if(!name||price<=0){alert("請輸入正確餐點名稱與價格！");return;}menu.push({name,price,category,options:[]});renderMenu();document.getElementById("newName").value="";document.getElementById("newPrice").value="";alert("餐點已新增！");}
+renderCategories();renderMenu();
 </script>
-</body>
-</html>
+</body></html>
