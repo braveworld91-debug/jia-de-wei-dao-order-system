@@ -64,14 +64,68 @@ function money(n){return Number(n||0).toLocaleString('zh-TW')}
 function showStatus(t,ok=false){$('#status').textContent=t;$('#status').style.color=ok?'#287447':'#a0442d'}
 function setMethod(){const delivery=$('#method').value==='外送';$('#delivery').classList.toggle('hidden',!delivery);$('#tableWrap').classList.toggle('hidden',$('#method').value!=='內用')}
 $('#method').addEventListener('change',setMethod);setMethod();
-function renderCategories(){const cats=['全部',...new Set(items.map(x=>x.category).filter(Boolean))];$('#categories').innerHTML=cats.map(c=>'<button class="chip '+(c===active?'active':'')+'" data-cat="'+String(c).replaceAll('"','&quot;')+'">'+c+'</button>').join('');$('#categories').querySelectorAll('button').forEach(b=>b.onclick=()=>{active=b.dataset.cat;renderCategories();renderMenu()})}
-function renderMenu(){const list=items.filter(x=>active==='全部'||x.category===active);$('#menu').innerHTML=list.length?list.map(x=>'<article class="item"><h3>'+escapeHtml(x.name)+'</h3><div class="desc">'+escapeHtml(x.description||'')+'</div><div class="price">$'+money(x.price)+'</div><button data-add="'+x.id+'">加入購物車</button></article>').join(''):'<div class="empty">目前沒有供應中的餐點</div>';$('#menu').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add))}
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function add(id){const x=items.find(a=>String(a.id)===String(id));if(!x)return;const row=cart.get(String(id))||{item:x,qty:0};row.qty++;cart.set(String(id),row);renderCart()}
-function change(id,d){const row=cart.get(id);if(!row)return;row.qty+=d;if(row.qty<=0)cart.delete(id);renderCart()}
-function renderCart(){let total=0;$('#cart').innerHTML=cart.size?[...cart.entries()].map(([id,r])=>{total+=Number(r.item.price||0)*r.qty;return '<div class="cartrow"><span>'+escapeHtml(r.item.name)+' × '+r.qty+'</span><span class="qty">$'+money(r.item.price*r.qty)+' <button data-id="'+id+'" data-d="-1">−</button><button data-id="'+id+'" data-d="1">+</button></span></div>'}).join(''):'<div class="notice">尚未選擇餐點</div>';$('#cart').querySelectorAll('button').forEach(b=>b.onclick=()=>change(b.dataset.id,Number(b.dataset.d)));$('#total').textContent=money(total)}
-async function init(){if(!window.APP_CONFIG?.supabaseUrl||!window.APP_CONFIG?.supabaseAnonKey){$('#menu').innerHTML='<div class="empty">網站畫面已建立，尚待設定 Supabase 公開連線資料。</div>';return}db=window.supabase.createClient(APP_CONFIG.supabaseUrl,APP_CONFIG.supabaseAnonKey);const {data,error}=await db.from('menu_items').select('*').eq('is_available',true).order('sort_order',{ascending:true});if(error){$('#menu').innerHTML='<div class="empty">餐點載入失敗，請檢查資料庫連線與讀取權限。</div>';showStatus(error.message);return}items=data||[];renderCategories();renderMenu()}
-$('#submit').onclick=async()=>{if(!db){showStatus('尚未設定 Supabase 連線，現在還不能正式送單。');return}if(!cart.size){showStatus('請先選擇餐點。');return}const method=$('#method').value,customer=$('#customer').value.trim(),phone=$('#phone').value.trim(),address=$('#address').value.trim();if(method==='外送'&&(!customer||!phone||!address)){showStatus('外送請填寫姓名、電話及地址。');return}const rows=[...cart.values()];const total=rows.reduce((s,r)=>s+Number(r.item.price||0)*r.qty,0);const order={order_number:Math.floor(Date.now()/1000),customer_name:method==='外送'?customer:null,table_number:method==='內用'?$('#table').value.trim()||null:null,dining_method:method,items:rows.map(r=>({id:r.item.id,name:r.item.name,price:r.item.price,quantity:r.qty})),total_amount:total,order_date:(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})(),notes:$('#notes').value.trim()||null,phone:method==='外送'?phone:null,delivery_address:method==='外送'?address:null,pickup_time:$('#pickup').value.trim()||null,status:'待確認'};$('#submit').disabled=true;showStatus('正在送出…');const {error}=await db.from('orders').insert(order);$('#submit').disabled=false;if(error){showStatus('送單失敗，請聯絡店家。');return}cart.clear();renderCart();showStatus('訂單已送出！請留意店家確認訊息。',true)}
+function getOptions(x){
+ const n=String(x.name||'');
+ if(n==='水餃') return {kind:'dumpling'};
+ if(n.includes('麵')) return {kind:'noodle'};
+ if(['肉燥飯','魚皮飯湯','魚肚飯湯','海鮮飯湯'].includes(n)) return {kind:'rice'};
+ return {kind:'none'};
+}
+function renderCategories(){const cats=['全部',...new Set(items.map(x=>x.category).filter(Boolean))];$('#categories').innerHTML=cats.map(c=>'<button class="chip '+(c===active?'active':'')+'" data-cat="'+escapeHtml(c)+'">'+escapeHtml(c)+'</button>').join('');$('#categories').querySelectorAll('button').forEach(b=>b.onclick=()=>{active=b.dataset.cat;renderCategories();renderMenu()})}
+function renderMenu(){
+ const list=items.filter(x=>active==='全部'||x.category===active);
+ $('#menu').innerHTML=list.length?list.map(x=>{
+  const opt=getOptions(x);let controls='';
+  if(opt.kind==='dumpling') controls='<label>數量（基本 10 顆 $50）</label><input class="custom-qty" type="number" min="10" step="1" value="10" data-qty="'+x.id+'"><div class="desc">每增加 1 顆 +$5</div>';
+  if(opt.kind==='noodle') controls='<label>麵條種類</label><select data-noodle="'+x.id+'"><option>細麵</option><option>寬麵</option><option>鹽水意麵</option></select><label><input type="checkbox" data-extra-noodle="'+x.id+'" style="width:auto"> 加麵 +$10</label>';
+  if(opt.kind==='rice') controls='<label><input type="checkbox" data-extra-rice="'+x.id+'" style="width:auto"> 加飯 +$10</label>';
+  return '<article class="item"><h3>'+escapeHtml(x.name)+'</h3><div class="desc">'+escapeHtml(x.description||'')+'</div><div class="price">$'+money(x.price)+'</div>'+controls+'<button data-add="'+x.id+'">加入購物車</button></article>';
+ }).join(''):'<div class="empty">目前沒有供應中的餐點</div>';
+ $('#menu').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));
+}
+function add(id){
+ const x=items.find(a=>String(a.id)===String(id));if(!x)return;
+ const opt=getOptions(x);let choice={};
+ if(opt.kind==='dumpling'){const q=Math.max(10,Math.floor(Number(document.querySelector('[data-qty="'+id+'"]').value)||10));choice={quantity:q,unit_label:'顆'};}
+ if(opt.kind==='noodle'){choice={noodle_type:document.querySelector('[data-noodle="'+id+'"]').value,extra_noodle:document.querySelector('[data-extra-noodle="'+id+'"]').checked};}
+ if(opt.kind==='rice'){choice={extra_rice:document.querySelector('[data-extra-rice="'+id+'"]').checked};}
+ let unitPrice=Number(x.price||0);
+ if(opt.kind==='dumpling') unitPrice=50+(choice.quantity-10)*5;
+ if(choice.extra_noodle||choice.extra_rice) unitPrice+=10;
+ const key=String(id)+'|'+JSON.stringify(choice);
+ const row=cart.get(key)||{item:x,qty:0,choice,unitPrice,key};row.qty++;cart.set(key,row);renderCart();
+}
+function change(key,d){const row=cart.get(key);if(!row)return;row.qty+=d;if(row.qty<=0)cart.delete(key);renderCart()}
+function choiceLabel(c){const a=[];if(c.noodle_type)a.push(c.noodle_type);if(c.extra_noodle)a.push('加麵');if(c.extra_rice)a.push('加飯');if(c.quantity)a.push(c.quantity+'顆');return a.join('、')}
+function renderCart(){
+ let total=0;
+ $('#cart').innerHTML=cart.size?[...cart.entries()].map(([key,r])=>{
+  const line=r.unitPrice*r.qty;total+=line;
+  return '<div class="cartrow"><span>'+escapeHtml(r.item.name)+(choiceLabel(r.choice)?'<small style="display:block;color:#85786c">'+escapeHtml(choiceLabel(r.choice))+'</small>':'')+' × '+r.qty+'</span><span class="qty">$'+money(line)+' <button data-key="'+encodeURIComponent(key)+'" data-d="-1">−</button><button data-key="'+encodeURIComponent(key)+'" data-d="1">+</button></span></div>';
+ }).join(''):'<div class="notice">尚未選擇餐點</div>';
+ $('#cart').querySelectorAll('button').forEach(b=>b.onclick=()=>change(decodeURIComponent(b.dataset.key),Number(b.dataset.d)));
+ $('#total').textContent=money(total);
+}
+async function init(){
+ if(!window.APP_CONFIG?.supabaseUrl||!window.APP_CONFIG?.supabaseAnonKey){$('#menu').innerHTML='<div class="empty">網站畫面已建立，尚待設定 Supabase 公開連線資料。</div>';return}
+ db=window.supabase.createClient(APP_CONFIG.supabaseUrl,APP_CONFIG.supabaseAnonKey);
+ const {data,error}=await db.from('menu_items').select('*').eq('is_available',true).order('sort_order',{ascending:true});
+ if(error){$('#menu').innerHTML='<div class="empty">餐點載入失敗，請檢查資料庫連線與讀取權限。</div>';showStatus(error.message);return}
+ items=data||[];renderCategories();renderMenu();
+}
+$('#submit').onclick=async()=>{
+ if(!db){showStatus('尚未設定 Supabase 連線，現在還不能正式送單。');return}
+ if(!cart.size){showStatus('請先選擇餐點。');return}
+ const method=$('#method').value,customer=$('#customer').value.trim(),phone=$('#phone').value.trim(),address=$('#address').value.trim();
+ if(method==='外送'&&(!customer||!phone||!address)){showStatus('外送請填寫姓名、電話及地址。');return}
+ const rows=[...cart.values()],total=rows.reduce((s,r)=>s+r.unitPrice*r.qty,0),d=new Date();
+ const order={order_number:Math.floor(Date.now()/1000),customer_name:method==='外送'?customer:null,table_number:method==='內用'?$('#table').value.trim()||null:null,dining_method:method,items:rows.map(r=>({id:r.item.id,name:r.item.name,base_price:r.item.price,unit_price:r.unitPrice,quantity:r.qty,options:r.choice})),total_amount:total,order_date:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),notes:$('#notes').value.trim()||null,phone:method==='外送'?phone:null,delivery_address:method==='外送'?address:null,pickup_time:$('#pickup').value.trim()||null,status:'待確認'};
+ $('#submit').disabled=true;showStatus('正在送出…');
+ const {error}=await db.from('orders').insert(order);$('#submit').disabled=false;
+ if(error){showStatus('送單失敗，請聯絡店家。');return}
+ cart.clear();renderCart();showStatus('訂單已送出！請留意店家確認訊息。',true)
+};
 init();
 </script>
 </body></html>
