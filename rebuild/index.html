@@ -120,7 +120,7 @@ $('#submit').onclick=async()=>{
  const method=$('#method').value,customer=$('#customer').value.trim(),phone=$('#phone').value.trim(),address=$('#address').value.trim();
  if(method==='外送'&&(!customer||!phone||!address)){showStatus('外送請填寫姓名、電話及地址。');return}
  const rows=[...cart.values()],total=rows.reduce((s,r)=>s+r.unitPrice*r.qty,0),d=new Date();
- const order={order_number:Date.now()%1000000000,customer_name:method==='外送'?customer:null,table_number:method==='內用'?$('#table').value.trim()||null:null,dining_method:method,items:rows.map(r=>({id:r.item.id,name:r.item.name,base_price:r.item.price,unit_price:r.unitPrice,quantity:r.qty,options:r.choice})),total_amount:total,order_date:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),notes:$('#notes').value.trim()||null,phone:method==='外送'?phone:null,delivery_address:method==='外送'?address:null,pickup_time:$('#pickup').value.trim()||null,status:'待確認'};
+ const order={order_number:Math.floor(Date.now()/1000),customer_name:method==='外送'?customer:null,table_number:method==='內用'?$('#table').value.trim()||null:null,dining_method:method,items:rows.map(r=>({id:r.item.id,name:r.item.name,base_price:r.item.price,unit_price:r.unitPrice,quantity:r.qty,options:r.choice})),total_amount:total,order_date:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),notes:$('#notes').value.trim()||null,phone:method==='外送'?phone:null,delivery_address:method==='外送'?address:null,pickup_time:$('#pickup').value.trim()||null,status:'待確認'};
  $('#submit').disabled=true;showStatus('正在送出…');
  const {error}=await db.from('orders').insert(order);$('#submit').disabled=false;
  if(error){showStatus('送單失敗，請聯絡店家。');return}
