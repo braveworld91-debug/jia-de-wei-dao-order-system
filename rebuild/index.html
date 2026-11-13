@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>家的味道｜線上點餐</title>
+<style>
+:root{--ink:#352d27;--muted:#85786c;--brand:#9a5637;--cream:#fbf7f0;--line:#eadfd2;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif}
+header{background:#fff;padding:22px max(20px,calc((100% - 1100px)/2));border-bottom:1px solid var(--line)}
+.brand{font-size:25px;font-weight:800;letter-spacing:2px}.tag{color:var(--muted);font-size:13px;margin-top:4px}
+main{max-width:1100px;margin:26px auto;padding:0 18px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px}
+h1{font-size:25px;margin:0 0 6px}.intro{color:var(--muted);margin-bottom:18px}
+#categories{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.chip,button{border:0;border-radius:999px;padding:10px 16px;cursor:pointer;font:inherit}
+.chip{background:#eee5da;color:var(--ink)}.chip.active,button.primary{background:var(--brand);color:white}
+#menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.item,.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:15px}
+.item h3{margin:0 0 6px;font-size:17px}.desc{font-size:13px;color:var(--muted);min-height:20px}.price{font-weight:750;color:var(--brand);margin:10px 0}
+.item button{padding:8px 14px;background:#f2e8df;color:var(--brand)}
+.panel{position:sticky;top:16px;height:max-content}.panel h2{font-size:19px;margin:0 0 14px}
+.cartrow{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.qty button{padding:2px 9px;background:#f2e8df;color:var(--ink);margin-left:4px}
+.total{font-size:20px;font-weight:800;text-align:right;padding:15px 0}
+label{display:block;font-size:13px;font-weight:650;margin:12px 0 5px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:white;font:inherit;color:var(--ink)}
+textarea{min-height:70px;resize:vertical}.hidden{display:none}
+button.primary{width:100%;font-weight:700}.notice{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px}
+#status{margin-top:12px;font-size:14px;line-height:1.5}
+.empty{padding:28px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:14px;grid-column:1/-1}
+@media(max-width:800px){main{grid-template-columns:1fr}.panel{position:static}#menu{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){#menu{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="brand">家的味道</div><div class="tag">一份用心料理，讓每一餐都有家的味道</div></header>
+<main>
+<section>
+<h1>今天想吃點什麼？</h1><div class="intro">選好餐點，加入購物車即可訂購。</div>
+<div id="categories"></div><div id="menu"><div class="empty">正在載入餐點…</div></div>
+</section>
+<aside class="panel">
+<h2>🧺 我的訂單</h2><div id="cart"><div class="notice">尚未選擇餐點</div></div>
+<div class="total">合計 $<span id="total">0</span></div>
+<label for="method">取餐方式</label><select id="method"><option value="內用">內用</option><option value="外帶">外帶</option><option value="外送">外送</option></select>
+<div id="tableWrap"><label for="table">桌號（選填）</label><input id="table" placeholder="例如：3"></div>
+<div id="delivery" class="hidden">
+<label for="customer">收件人姓名</label><input id="customer" autocomplete="name" placeholder="請輸入姓名">
+<label for="phone">聯絡電話</label><input id="phone" autocomplete="tel" placeholder="請輸入電話">
+<label for="address">外送地址</label><input id="address" autocomplete="street-address" placeholder="請輸入完整地址">
+</div>
+<label for="pickup">希望取餐時間（選填）</label><input id="pickup" placeholder="例如：今天 12:00">
+<label for="notes">備註（選填）</label><textarea id="notes" placeholder="餐點需求或其他備註"></textarea>
+<button class="primary" id="submit">送出訂單</button>
+<div id="status" role="status"></div>
+<div class="notice">內用、外帶不必填姓名與電話；外送需填寫聯絡資料。請以店家回覆確認訂單。</div>
+</aside>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+let db=null,items=[],cart=new Map(),active='全部';
+function money(n){return Number(n||0).toLocaleString('zh-TW')}
+function showStatus(t,ok=false){$('#status').textContent=t;$('#status').style.color=ok?'#287447':'#a0442d'}
+function setMethod(){const delivery=$('#method').value==='外送';$('#delivery').classList.toggle('hidden',!delivery);$('#tableWrap').classList.toggle('hidden',$('#method').value!=='內用')}
+$('#method').addEventListener('change',setMethod);setMethod();
+function renderCategories(){const cats=['全部',...new Set(items.map(x=>x.category).filter(Boolean))];$('#categories').innerHTML=cats.map(c=>'<button class="chip '+(c===active?'active':'')+'" data-cat="'+String(c).replaceAll('"','&quot;')+'">'+c+'</button>').join('');$('#categories').querySelectorAll('button').forEach(b=>b.onclick=()=>{active=b.dataset.cat;renderCategories();renderMenu()})}
+function renderMenu(){const list=items.filter(x=>active==='全部'||x.category===active);$('#menu').innerHTML=list.length?list.map(x=>'<article class="item"><h3>'+escapeHtml(x.name)+'</h3><div class="desc">'+escapeHtml(x.description||'')+'</div><div class="price">$'+money(x.price)+'</div><button data-add="'+x.id+'">加入購物車</button></article>').join(''):'<div class="empty">目前沒有供應中的餐點</div>';$('#menu').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add))}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function add(id){const x=items.find(a=>String(a.id)===String(id));if(!x)return;const row=cart.get(String(id))||{item:x,qty:0};row.qty++;cart.set(String(id),row);renderCart()}
+function change(id,d){const row=cart.get(id);if(!row)return;row.qty+=d;if(row.qty<=0)cart.delete(id);renderCart()}
+function renderCart(){let total=0;$('#cart').innerHTML=cart.size?[...cart.entries()].map(([id,r])=>{total+=Number(r.item.price||0)*r.qty;return '<div class="cartrow"><span>'+escapeHtml(r.item.name)+' × '+r.qty+'</span><span class="qty">$'+money(r.item.price*r.qty)+' <button data-id="'+id+'" data-d="-1">−</button><button data-id="'+id+'" data-d="1">+</button></span></div>'}).join(''):'<div class="notice">尚未選擇餐點</div>';$('#cart').querySelectorAll('button').forEach(b=>b.onclick=()=>change(b.dataset.id,Number(b.dataset.d)));$('#total').textContent=money(total)}
+async function init(){if(!window.APP_CONFIG?.supabaseUrl||!window.APP_CONFIG?.supabaseAnonKey){$('#menu').innerHTML='<div class="empty">網站畫面已建立，尚待設定 Supabase 公開連線資料。</div>';return}db=window.supabase.createClient(APP_CONFIG.supabaseUrl,APP_CONFIG.supabaseAnonKey);const {data,error}=await db.from('menu_items').select('*').eq('is_available',true).order('sort_order',{ascending:true});if(error){$('#menu').innerHTML='<div class="empty">餐點載入失敗，請檢查資料庫連線與讀取權限。</div>';showStatus(error.message);return}items=data||[];renderCategories();renderMenu()}
+$('#submit').onclick=async()=>{if(!db){showStatus('尚未設定 Supabase 連線，現在還不能正式送單。');return}if(!cart.size){showStatus('請先選擇餐點。');return}const method=$('#method').value,customer=$('#customer').value.trim(),phone=$('#phone').value.trim(),address=$('#address').value.trim();if(method==='外送'&&(!customer||!phone||!address)){showStatus('外送請填寫姓名、電話及地址。');return}const rows=[...cart.values()];const total=rows.reduce((s,r)=>s+Number(r.item.price||0)*r.qty,0);const order={order_number:'JW'+Date.now().toString().slice(-9),customer_name:method==='外送'?customer:null,table_number:method==='內用'?$('#table').value.trim()||null:null,dining_method:method,items:rows.map(r=>({id:r.item.id,name:r.item.name,price:r.item.price,quantity:r.qty})),total_amount:total,notes:$('#notes').value.trim()||null,phone:method==='外送'?phone:null,delivery_address:method==='外送'?address:null,pickup_time:$('#pickup').value.trim()||null,status:'待確認'};$('#submit').disabled=true;showStatus('正在送出…');const {error}=await db.from('orders').insert(order);$('#submit').disabled=false;if(error){showStatus('送單失敗，請聯絡店家。');return}cart.clear();renderCart();showStatus('訂單已送出！請留意店家確認訊息。',true)}
+init();
+</script>
+</body></html>
